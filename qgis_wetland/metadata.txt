@@ -4,7 +4,7 @@ qgisMinimumVersion=3.28
 qgisMaximumVersion=4.99
 description=Native QGIS tools for wetland mapping, data catalog presets, imagery browsing, and water occurrence analysis.
 version=0.1.0
-author=Qiusheng WU
+author=Qiusheng Wu
 email=giswqs@gmail.com
 
 about=Wetland Mapper is a native QGIS plugin for wetland mapping and analysis.
