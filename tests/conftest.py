@@ -115,5 +115,14 @@ def _install_qgis_stub() -> None:
     sys.modules["qgis.core"] = qgis_core
     qgis.core = qgis_core
 
+    qgis_utils = types.ModuleType("qgis.utils")
+    qgis_utils.plugins = {}
+    qgis_utils.available_plugins = []
+    qgis_utils.active_plugins = []
+    qgis_utils.loadPlugin = lambda _package_name: None
+    qgis_utils.startPlugin = lambda _package_name: None
+    sys.modules["qgis.utils"] = qgis_utils
+    qgis.utils = qgis_utils
+
 
 _install_qgis_stub()
