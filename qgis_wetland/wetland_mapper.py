@@ -2,8 +2,8 @@
 
 import os
 import re
-import sys
 
+from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolBar, QMessageBox
@@ -108,7 +108,6 @@ class QgisWetlandPlugin:
             self.toggle_chat_dock,
             status_tip="Open the OpenGeoAgent chat panel",
             checkable=True,
-            add_to_toolbar=False,
             parent=self.iface.mainWindow(),
         )
 
@@ -190,7 +189,7 @@ class QgisWetlandPlugin:
             self._wetland_dock.show()
             self._wetland_dock.raise_()
 
-    def _on_wetland_visibility_changed(self, visible):
+    def _on_wetland_visibility_changed(self, _visible):
         self._sync_panel_actions()
 
     def toggle_chat_dock(self):
@@ -234,7 +233,7 @@ class QgisWetlandPlugin:
             self._prompt_open_geoagent_install()
             return
 
-        if not hasattr(plugin, "toggle_chat_dock"):
+        if not callable(getattr(plugin, "toggle_chat_dock", None)):
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "OpenGeoAgent Required",
@@ -264,9 +263,10 @@ class QgisWetlandPlugin:
         try:
             import qgis.utils as qgis_utils
         except Exception as exc:
-            print(
-                f"Wetland Mapper: could not import qgis.utils: {exc}",
-                file=sys.stderr,
+            QgsMessageLog.logMessage(
+                f"Could not import qgis.utils: {exc}",
+                PLUGIN_NAME,
+                Qgis.MessageLevel.Warning,
             )
             return None
 
@@ -296,10 +296,10 @@ class QgisWetlandPlugin:
                 if plugin is not None:
                     return plugin
             except Exception as exc:
-                print(
-                    f"Wetland Mapper: failed to load OpenGeoAgent plugin "
-                    f"'{package_name}': {exc}",
-                    file=sys.stderr,
+                QgsMessageLog.logMessage(
+                    f"Failed to load OpenGeoAgent plugin " f"'{package_name}': {exc}",
+                    PLUGIN_NAME,
+                    Qgis.MessageLevel.Warning,
                 )
 
         return None
@@ -336,9 +336,10 @@ class QgisWetlandPlugin:
                 action.trigger()
                 return
         except Exception as exc:
-            print(
-                f"Wetland Mapper: could not open QGIS Plugin Manager: {exc}",
-                file=sys.stderr,
+            QgsMessageLog.logMessage(
+                f"Could not open QGIS Plugin Manager: {exc}",
+                PLUGIN_NAME,
+                Qgis.MessageLevel.Warning,
             )
 
         QMessageBox.information(
