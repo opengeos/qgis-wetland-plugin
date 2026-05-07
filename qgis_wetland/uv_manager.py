@@ -1,5 +1,5 @@
 """
-UV Package Installer Manager for Plugin Template.
+UV package installer manager for Wetland Mapper.
 
 Downloads and manages the uv package installer binary for fast
 dependency installation in the plugin's virtual environment.
@@ -28,7 +28,7 @@ from qgis.core import QgsMessageLog, Qgis, QgsBlockingNetworkRequest
 from qgis.PyQt.QtCore import QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-CACHE_DIR = os.path.join(os.path.expanduser("~"), ".qgis_plugin_template")
+CACHE_DIR = os.path.join(os.path.expanduser("~"), ".qgis_wetland")
 UV_DIR = os.path.join(CACHE_DIR, "uv")
 
 # Pin a known-good uv version.
@@ -45,7 +45,7 @@ def _log(message, level=Qgis.MessageLevel.Info):
         level: The log level (Qgis.MessageLevel.Info, Qgis.MessageLevel.Warning,
             Qgis.MessageLevel.Critical).
     """
-    QgsMessageLog.logMessage(str(message), "Plugin Template", level=level)
+    QgsMessageLog.logMessage(str(message), "Wetland Mapper", level=level)
 
 
 def get_uv_path() -> str:

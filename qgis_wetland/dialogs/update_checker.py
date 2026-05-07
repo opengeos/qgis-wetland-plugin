@@ -1,5 +1,5 @@
 """
-Update Checker Dialog for Plugin Template
+Update checker dialog for Wetland Mapper.
 
 This dialog provides functionality to check for updates from GitHub
 and download/install the latest version of the plugin.
@@ -28,11 +28,9 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtGui import QFont
 
-# GitHub URLs for the plugin
-# TODO: Update these values for your plugin
-GITHUB_REPO = "opengeos/qgis-plugin-template"
+GITHUB_REPO = "opengeos/qgis-wetland-plugin"
 GITHUB_BRANCH = "main"
-PLUGIN_PATH = "plugin_template"
+PLUGIN_PATH = "qgis_wetland"
 METADATA_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{PLUGIN_PATH}/metadata.txt"
 ZIP_URL = f"https://github.com/{GITHUB_REPO}/archive/refs/heads/{GITHUB_BRANCH}.zip"
 
@@ -117,7 +115,7 @@ class DownloadWorker(QThread):
         temp_dir = None
         try:
             # Create temporary directory
-            temp_dir = tempfile.mkdtemp(prefix="plugin_template_update_")
+            temp_dir = tempfile.mkdtemp(prefix="qgis_wetland_update_")
             zip_path = os.path.join(temp_dir, "plugin.zip")
 
             # Download the zip file
@@ -149,10 +147,10 @@ class DownloadWorker(QThread):
             self.progress.emit(70, "Locating plugin files...")
 
             # Find the plugin directory in the extracted files
-            # The structure will be: repo-main/plugin_qgis/plugin_template/
+            # The structure will be: repo-main/qgis_wetland/
             extracted_plugin_dir = None
             for root, dirs, files in os.walk(extract_dir):
-                if "metadata.txt" in files and "plugin_template.py" in files:
+                if "metadata.txt" in files and "wetland_mapper.py" in files:
                     extracted_plugin_dir = root
                     break
 
@@ -185,7 +183,7 @@ class DownloadWorker(QThread):
                 def is_valid_plugin_dir(path):
                     return os.path.exists(
                         os.path.join(path, "metadata.txt")
-                    ) and os.path.exists(os.path.join(path, "plugin_template.py"))
+                    ) and os.path.exists(os.path.join(path, "wetland_mapper.py"))
 
                 if os.path.exists(backup_dir) and is_valid_plugin_dir(backup_dir):
                     if os.path.exists(target_dir):
@@ -225,7 +223,7 @@ class UpdateCheckerDialog(QDialog):
         self.check_worker = None
         self.download_worker = None
 
-        self.setWindowTitle("Plugin Template Update")
+        self.setWindowTitle("Wetland Mapper Update")
         self.setMinimumWidth(500)
         self.setMinimumHeight(400)
 
@@ -250,7 +248,7 @@ class UpdateCheckerDialog(QDialog):
         layout.setSpacing(15)
 
         # Header
-        header_label = QLabel("Plugin Template Update Checker")
+        header_label = QLabel("Wetland Mapper Update Checker")
         header_font = QFont()
         header_font.setPointSize(14)
         header_font.setBold(True)
@@ -471,7 +469,7 @@ class UpdateCheckerDialog(QDialog):
         QMessageBox.information(
             self,
             "Update Complete",
-            f"Plugin Template has been updated to version {self.latest_version}.\n\n"
+            f"Wetland Mapper has been updated to version {self.latest_version}.\n\n"
             "Please restart QGIS to apply the changes.",
         )
 
