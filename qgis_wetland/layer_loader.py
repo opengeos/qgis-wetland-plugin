@@ -122,11 +122,10 @@ def _add_wms(entry: CatalogEntry):
     layer = QgsRasterLayer(uri, entry.name, "wms")
     if not layer.isValid():
         error = ""
+        # Fall back to a generic message if the QGIS error API is unavailable.
         try:
             error = layer.error().summary()
-        except (
-            Exception
-        ):  # nosec B110 - fall back to generic message if QGIS error API is unavailable
+        except Exception:  # nosec B110
             pass
         message = f"QGIS could not load WMS layer: {entry.name}"
         if error:

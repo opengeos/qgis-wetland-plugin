@@ -389,6 +389,7 @@ class QgisWetlandPlugin:
     def show_about(self):
         """Display the about dialog."""
         version = "Unknown"
+        # Leave version as "Unknown" if metadata.txt is missing or unreadable.
         try:
             metadata_path = os.path.join(self.plugin_dir, "metadata.txt")
             with open(metadata_path, "r", encoding="utf-8") as file_obj:
@@ -396,9 +397,7 @@ class QgisWetlandPlugin:
                 version_match = re.search(r"^version=(.+)$", content, re.MULTILINE)
                 if version_match:
                     version = version_match.group(1).strip()
-        except (
-            Exception
-        ):  # nosec B110 - leave version as "Unknown" if metadata.txt is missing or unreadable
+        except Exception:  # nosec B110
             pass
 
         about_text = f"""
