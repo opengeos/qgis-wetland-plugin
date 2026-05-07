@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import urllib.request
 from dataclasses import replace
 
 from qgis.PyQt.QtCore import Qt, QSettings
@@ -54,7 +53,11 @@ from ..constants import (
     PLUGIN_NAME,
     SETTINGS_PREFIX,
 )
-from ..downloads import is_remote_cacheable_ogr, make_download_task
+from ..downloads import (
+    is_remote_cacheable_ogr,
+    make_download_task,
+    make_health_check_task,
+)
 from ..layer_loader import (
     add_catalog_entries,
     add_catalog_entry,
@@ -74,6 +77,7 @@ class WetlandDockWidget(QDockWidget):
         self._last_result = None
         self._jrc_task = None
         self._download_tasks = []
+        self._health_task = None
         self._naip_cache = {}
         self._bbox_tool = None
         self._setup_ui()
@@ -536,36 +540,55 @@ class WetlandDockWidget(QDockWidget):
         return cache_path_for_url(url, os.path.join(cache_dir, "data"))
 
     def _check_source_health(self):
+        if self._health_task is not None:
+            self._set_status("Source health check already running.")
+            return
+
         entries = self._selected_catalog_entries() or entries_for_preset(
             PLAYA_PRESET_ID
         )
-        lines = []
+
+        preflight = []
+        remaining = []
         for entry in entries:
-            try:
-                if entry.provider == "pmtiles":
-                    if not has_gdal_pmtiles_support():
-                        raise RuntimeError("GDAL PMTiles driver not available")
-                    request = urllib.request.Request(entry.source, method="HEAD")
-                    with urllib.request.urlopen(
-                        request, timeout=10
-                    ) as response:  # nosec B310
-                        size = response.headers.get("content-length", "unknown")
-                    lines.append(f"{entry.name}: reachable ({size} bytes)")
-                elif entry.source.startswith("http"):
-                    request = urllib.request.Request(entry.source, method="HEAD")
-                    with urllib.request.urlopen(
-                        request, timeout=10
-                    ) as response:  # nosec B310
-                        lines.append(f"{entry.name}: HTTP {response.status}")
-                else:
-                    lines.append(
-                        f"{entry.name}: {'found' if os.path.exists(entry.source) else 'missing'}"
-                    )
-            except Exception as exc:
-                lines.append(f"{entry.name}: failed ({exc})")
-        self.analysis_output.setPlainText("\n".join(lines))
+            if entry.provider == "pmtiles" and not has_gdal_pmtiles_support():
+                preflight.append(
+                    f"{entry.name}: failed (GDAL PMTiles driver not available)"
+                )
+                continue
+            remaining.append(entry)
+
+        if preflight:
+            self.analysis_output.setPlainText("\n".join(preflight))
+            self.tabs.setCurrentIndex(2)
+
+        if not remaining:
+            self._set_status("Source health check complete.")
+            return
+
+        self._set_status("Checking source health...")
         self.tabs.setCurrentIndex(2)
-        self._set_status("Source health check complete.")
+
+        task = make_health_check_task(
+            remaining,
+            lambda success, lines: self._on_health_check_finished(
+                success, preflight, lines
+            ),
+        )
+        self._health_task = task
+        from qgis.core import QgsApplication
+
+        QgsApplication.taskManager().addTask(task)
+
+    def _on_health_check_finished(self, success, preflight_lines, task_lines):
+        self._health_task = None
+        all_lines = list(preflight_lines) + list(task_lines)
+        self.analysis_output.setPlainText("\n".join(all_lines))
+        self.tabs.setCurrentIndex(2)
+        if success:
+            self._set_status("Source health check complete.")
+        else:
+            self._set_status("Source health check canceled.")
 
     def _zoom_to_playa(self):
         canvas = self.iface.mapCanvas()
@@ -968,4 +991,7 @@ class WetlandDockWidget(QDockWidget):
 
     def _set_status(self, message, color=None):
         self.status_label.setText(message)
-        self.status_label.setStyleSheet("font-size: 10px;")
+        style = "font-size: 10px;"
+        if color:
+            style += f" color: {color};"
+        self.status_label.setStyleSheet(style)

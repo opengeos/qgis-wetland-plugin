@@ -63,10 +63,11 @@ def test_pmtiles_uri_helpers():
     )
 
 
-def test_download_cache_helpers():
+def test_download_cache_helpers(tmp_path):
+    cache_dir = tmp_path / "wetland-cache"
     url = "https://data.source.coop/giswqs/playa/WBDHU8.gpkg"
-    path = cache_path_for_url(url, "/tmp/wetland-cache")
-    assert path.startswith("/tmp/wetland-cache/WBDHU8-")
+    path = cache_path_for_url(url, str(cache_dir))
+    assert path.startswith(str(cache_dir / "WBDHU8-"))
     assert path.endswith(".gpkg")
     assert is_remote_cacheable_ogr(url)
     assert not is_remote_cacheable_ogr("https://example.com/data.pmtiles")

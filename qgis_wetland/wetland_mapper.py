@@ -119,13 +119,20 @@ class QgisWetlandPlugin:
             self._settings_dock.deleteLater()
             self._settings_dock = None
 
-        for action in self.actions:
-            self.iface.removePluginMenu(PLUGIN_MENU, action)
-
-        if self.toolbar:
-            del self.toolbar
-        if self.menu:
+        if self.menu is not None:
+            for action in list(self.menu.actions()):
+                self.menu.removeAction(action)
+            menubar = self.iface.mainWindow().menuBar()
+            menubar.removeAction(self.menu.menuAction())
             self.menu.deleteLater()
+            self.menu = None
+
+        if self.toolbar is not None:
+            self.iface.mainWindow().removeToolBar(self.toolbar)
+            self.toolbar.deleteLater()
+            self.toolbar = None
+
+        self.actions = []
 
     def toggle_wetland_dock(self):
         """Toggle the Wetland Mapper dock widget."""

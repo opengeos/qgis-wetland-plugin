@@ -132,6 +132,16 @@ def parse_jrc_response(data: Dict) -> Dict:
         raise ValueError("Monthly history data is not a list.")
     if "bin_edges" not in histogram or "counts" not in histogram:
         raise ValueError("Occurrence histogram is incomplete.")
+    bin_edges = histogram["bin_edges"]
+    counts = histogram["counts"]
+    if not isinstance(bin_edges, list) or not isinstance(counts, list):
+        raise ValueError("Occurrence histogram bin_edges and counts must be lists.")
+    if len(bin_edges) != len(counts) + 1:
+        raise ValueError(
+            "Occurrence histogram is malformed: "
+            f"bin_edges has {len(bin_edges)} entries but counts has {len(counts)} "
+            "(expected len(bin_edges) == len(counts) + 1)."
+        )
     for key in ("mean", "min", "max", "stdDev"):
         if key not in stats:
             raise ValueError(f"Occurrence stats missing '{key}'.")

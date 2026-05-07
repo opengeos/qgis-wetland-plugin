@@ -219,8 +219,8 @@ def _style_simple_fill(
     symbol = QgsFillSymbol.createSimple(
         {
             "color": fill_color,
-            "outline_color": "255,255,255,0",
-            "outline_width": "0",
+            "outline_color": stroke_color,
+            "outline_width": "0.3",
         }
     )
     symbol.setOpacity(max(0.0, min(1.0, opacity)))

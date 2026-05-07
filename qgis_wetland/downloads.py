@@ -33,7 +33,7 @@ def cache_path_for_url(url: str, cache_dir: str | None = None) -> str:
 def is_remote_cacheable_ogr(url: str) -> bool:
     """Return True for remote OGR files that should be cached locally."""
     lowered = url.lower()
-    return url.startswith("https://") and not lowered.endswith(".pmtiles")
+    return lowered.startswith("https://") and not lowered.endswith(".pmtiles")
 
 
 def download_to_cache(url: str, cache_dir: str | None = None) -> str:
@@ -91,3 +91,70 @@ def make_download_task(entry, cache_dir: str, callback):
             callback(success, entry, self.path, self.error)
 
     return DownloadTask()
+
+
+def probe_source(entry, timeout: int = 10) -> str:
+    """Return a one-line status string for a catalog entry source.
+
+    Performs a HEAD request for HTTP(S) sources and an `os.path.exists` check
+    for local paths. Intended to run inside a background `QgsTask` so the UI
+    stays responsive while several entries are checked.
+
+    Args:
+        entry: Catalog entry exposing ``name``, ``provider``, and ``source``.
+        timeout: Per-request timeout in seconds for HTTP HEAD checks.
+
+    Returns:
+        A one-line human-readable status suitable for display.
+    """
+    try:
+        if entry.provider == "pmtiles":
+            request = urllib.request.Request(entry.source, method="HEAD")
+            with urllib.request.urlopen(
+                request, timeout=timeout
+            ) as response:  # nosec B310
+                size = response.headers.get("content-length", "unknown")
+            return f"{entry.name}: reachable ({size} bytes)"
+        if entry.source.startswith("http"):
+            request = urllib.request.Request(entry.source, method="HEAD")
+            with urllib.request.urlopen(
+                request, timeout=timeout
+            ) as response:  # nosec B310
+                return f"{entry.name}: HTTP {response.status}"
+        found = os.path.exists(entry.source)
+        return f"{entry.name}: {'found' if found else 'missing'}"
+    except Exception as exc:
+        return f"{entry.name}: failed ({exc})"
+
+
+def make_health_check_task(entries, callback, timeout: int = 10):
+    """Create a QgsTask that probes each entry off the UI thread.
+
+    Args:
+        entries: Iterable of catalog entries to probe.
+        callback: Callable invoked with ``(success: bool, lines: list[str])``
+            on the UI thread once the task finishes.
+        timeout: Per-request timeout in seconds.
+    """
+    from qgis.core import QgsTask
+
+    snapshot = list(entries)
+
+    class HealthCheckTask(QgsTask):
+        def __init__(self):
+            super().__init__(
+                "Check Wetland Mapper source health", QgsTask.Flag.CanCancel
+            )
+            self.lines: list[str] = []
+
+        def run(self):
+            for entry in snapshot:
+                if self.isCanceled():
+                    return False
+                self.lines.append(probe_source(entry, timeout=timeout))
+            return True
+
+        def finished(self, success):
+            callback(success, self.lines)
+
+    return HealthCheckTask()
