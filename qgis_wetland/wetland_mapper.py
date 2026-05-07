@@ -396,7 +396,9 @@ class QgisWetlandPlugin:
                 version_match = re.search(r"^version=(.+)$", content, re.MULTILINE)
                 if version_match:
                     version = version_match.group(1).strip()
-        except Exception:
+        except (
+            Exception
+        ):  # nosec B110 - leave version as "Unknown" if metadata.txt is missing or unreadable
             pass
 
         about_text = f"""
