@@ -17,8 +17,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default values
-PLUGIN_NAME="plugin_template"
-SOURCE_DIR="${SCRIPT_DIR}/plugin_template"
+PLUGIN_NAME="qgis_wetland"
+SOURCE_DIR="${SCRIPT_DIR}/qgis_wetland"
 OUTPUT_DIR="${SCRIPT_DIR}"
 INCLUDE_VERSION=true
 
@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --name, -n NAME       Plugin name for zip folder (default: plugin_template)"
+            echo "  --name, -n NAME       Plugin name for zip folder (default: qgis_wetland)"
             echo "  --source, -s PATH     Source plugin directory"
             echo "  --output, -o PATH     Output directory for zip file"
             echo "  --no-version          Don't include version in filename"
@@ -150,4 +150,3 @@ echo ""
 echo "Zip contents:"
 echo "-------------"
 unzip -l "$OUTPUT_PATH" | head -30
-

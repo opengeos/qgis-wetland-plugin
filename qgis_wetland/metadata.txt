@@ -1,0 +1,43 @@
+[general]
+name=Wetland Mapper
+qgisMinimumVersion=3.28
+qgisMaximumVersion=4.99
+description=Native QGIS tools for wetland mapping, data catalog presets, imagery browsing, and water occurrence analysis.
+version=0.1.0
+author=Qiusheng WU
+email=giswqs@gmail.com
+
+about=Wetland Mapper is a native QGIS plugin for wetland mapping and analysis.
+
+    It ships with a Playa Wetlands example preset, but the plugin is designed
+    for broader wetland mapping workflows. Users can load built-in data
+    catalogs, add custom WMS/XYZ/PMTiles/local vector sources, browse NAIP
+    imagery, inspect wetland-oriented attributes, and run JRC water occurrence
+    statistics for map extents or selected features.
+
+    Requirements:
+    - QGIS/GDAL with PMTiles vector driver support for PMTiles catalog layers
+    - matplotlib for chart PNG exports (installable from Settings)
+
+tracker=https://github.com/opengeos/qgis-wetland-plugin/issues
+repository=https://github.com/opengeos/qgis-wetland-plugin
+
+hasProcessingProvider=no
+
+tags=wetlands, wetland mapping, water occurrence, JRC, NAIP, PMTiles, NWI
+
+homepage=https://github.com/opengeos/qgis-wetland-plugin
+category=Plugins
+icon=icons/icon.svg
+
+experimental=False
+deprecated=False
+
+changelog=
+    0.1.0 - Initial Wetland Mapper implementation
+        - Renamed package to qgis_wetland
+        - Added Playa Wetlands preset catalog
+        - Added custom source persistence
+        - Added PMTiles loading through GDAL/OGR /vsicurl
+        - Added NAIP imagery browsing
+        - Added JRC water occurrence analysis and exports

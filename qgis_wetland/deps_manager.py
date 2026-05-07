@@ -1,10 +1,10 @@
 """
-Dependency Manager for Plugin Template
+Dependency manager for Wetland Mapper.
 
-Manages a virtual environment for plugin dependencies (e.g. geopandas)
+Manages a virtual environment for optional plugin dependencies
 to avoid polluting the QGIS built-in Python environment.
 
-The venv is created at ~/.qgis_plugin_template/venv_pyX.Y and its
+The venv is created at ~/.qgis_wetland/venv_pyX.Y and its
 site-packages directory is added to sys.path at runtime.
 
 All ``subprocess`` calls in this module use list-form argv built from
@@ -27,10 +27,10 @@ from qgis.PyQt.QtCore import QThread, pyqtSignal
 
 # Required packages: (import_name, pip_install_name)
 REQUIRED_PACKAGES = [
-    ("geopandas", "geopandas"),
+    ("matplotlib", "matplotlib"),
 ]
 
-CACHE_DIR = os.path.join(os.path.expanduser("~"), ".qgis_plugin_template")
+CACHE_DIR = os.path.join(os.path.expanduser("~"), ".qgis_wetland")
 PYTHON_VERSION = f"py{sys.version_info.major}.{sys.version_info.minor}"
 
 
@@ -38,7 +38,7 @@ def get_venv_dir() -> str:
     """Get the path to the plugin's virtual environment directory.
 
     Returns:
-        Path to the venv directory (~/.qgis_plugin_template/venv_pyX.Y).
+        Path to the venv directory (~/.qgis_wetland/venv_pyX.Y).
     """
     return os.path.join(CACHE_DIR, f"venv_{PYTHON_VERSION}")
 
@@ -589,7 +589,7 @@ def create_venv(venv_dir: str) -> str:
         "This can happen when QGIS bundles Python in a way that prevents\n"
         "standard venv creation.\n\n"
         "You can try installing manually with:\n"
-        "  pip install geopandas\n\n"
+        "  pip install matplotlib\n\n"
         "Details:\n" + "\n".join(f"  {d}" for d in details)
     )
 
@@ -723,7 +723,7 @@ class DepsInstallWorker(QThread):
                         False,
                         "pip is not available in the virtual environment.\n"
                         "Please install dependencies manually:\n"
-                        "pip install geopandas",
+                        "pip install matplotlib",
                     )
                     return
             self.progress.emit(15, "Package installer ready.")
