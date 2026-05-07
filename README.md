@@ -21,6 +21,8 @@ GeoPackage, Shapefile, and project-layer sources.
 - **Exports**: Save analysis CSV/JSON/PNG outputs, map images, selected
   features, and analysis bounding boxes.
 
+![](https://github.com/user-attachments/assets/0574a288-7f34-45ab-90ca-45c4798e2978)
+
 ## Requirements
 
 - QGIS 3.28 through QGIS 4.x
