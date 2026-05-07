@@ -69,9 +69,10 @@ from ..naip import add_naip_xyz_layer, fetch_naip_tile_url
 class WetlandDockWidget(QDockWidget):
     """Dockable Wetland Mapper panel."""
 
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, plugin=None, parent=None):
         super().__init__(PLUGIN_NAME, parent)
         self.iface = iface
+        self.plugin = plugin
         self.settings = QSettings()
         self._last_bbox = None
         self._last_result = None
@@ -101,11 +102,58 @@ class WetlandDockWidget(QDockWidget):
         self.tabs.addTab(self._create_custom_sources_tab(), "Custom")
         self.tabs.addTab(self._create_analysis_tab(), "Analyze")
         self.tabs.addTab(self._create_export_tab(), "Export")
+        self.ai_assistant_tab = self._create_ai_assistant_tab()
+        self.tabs.addTab(self.ai_assistant_tab, "AI Assistant")
+        self.tabs.currentChanged.connect(self._on_tab_changed)
 
         self.status_label = QLabel("Ready")
         self.status_label.setWordWrap(True)
         self.status_label.setStyleSheet("font-size: 10px;")
         layout.addWidget(self.status_label)
+
+    def _create_ai_assistant_tab(self):
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        assistant_group = QGroupBox("OpenGeoAgent")
+        assistant_layout = QVBoxLayout(assistant_group)
+
+        open_btn = QPushButton("Open OpenGeoAgent")
+        open_btn.clicked.connect(self._open_ai_assistant)
+        assistant_layout.addWidget(open_btn)
+
+        self.ai_assistant_status = QLabel("Ready")
+        self.ai_assistant_status.setWordWrap(True)
+        self.ai_assistant_status.setStyleSheet("font-size: 10px; color: gray;")
+        assistant_layout.addWidget(self.ai_assistant_status)
+
+        layout.addWidget(assistant_group)
+        layout.addStretch()
+        return widget
+
+    def _open_ai_assistant(self):
+        plugin = getattr(self, "plugin", None)
+        if plugin is None or not hasattr(plugin, "open_ai_assistant"):
+            QMessageBox.warning(
+                self,
+                PLUGIN_NAME,
+                "OpenGeoAgent launcher is unavailable from this panel.",
+            )
+            return
+
+        plugin.open_ai_assistant()
+        self.ai_assistant_status.setText("OpenGeoAgent requested")
+
+    def show_ai_assistant_tab(self):
+        """Show the AI Assistant tab inside the Wetland Mapper panel."""
+        self.tabs.setCurrentWidget(self.ai_assistant_tab)
+        self.show()
+        self.raise_()
+
+    def _on_tab_changed(self, _index):
+        plugin = getattr(self, "plugin", None)
+        if plugin is not None and hasattr(plugin, "_sync_panel_actions"):
+            plugin._sync_panel_actions()
 
     def _create_catalog_tab(self):
         widget = QWidget()
