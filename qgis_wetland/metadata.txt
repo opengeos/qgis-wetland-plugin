@@ -33,7 +33,7 @@ icon=icons/icon.svg
 experimental=False
 deprecated=False
 
-changelog=
+changelog=Fix macOS QGIS installer dependency installation and bump patch version.
     0.1.0 - Initial Wetland Mapper implementation
         - Renamed package to qgis_wetland
         - Added Playa Wetlands preset catalog
