@@ -19,6 +19,9 @@ def _enum_value(cls, enum_name, member_name):
     return getattr(container, member_name)
 
 
+TOOLBAR_OBJECT_NAME = "WetlandMapperToolbar"
+MENU_TITLE = "Wetland Mapper"
+
 class QgisWetlandPlugin:
     """Wetland Mapper implementation class for QGIS."""
 
@@ -62,11 +65,13 @@ class QgisWetlandPlugin:
 
     def initGui(self):
         """Create menu entries and toolbar icons inside QGIS."""
+        self._remove_toolbars_by_object_name()
+        self._remove_menus_by_title()
         self.menu = QMenu(PLUGIN_MENU)
         self.iface.mainWindow().menuBar().addMenu(self.menu)
 
         self.toolbar = QToolBar(f"{PLUGIN_NAME} Toolbar")
-        self.toolbar.setObjectName("WetlandMapperToolbar")
+        self.toolbar.setObjectName(TOOLBAR_OBJECT_NAME)
         self.iface.addToolBar(self.toolbar)
 
         icon_base = os.path.join(self.plugin_dir, "icons")
@@ -129,6 +134,93 @@ class QgisWetlandPlugin:
             parent=self.iface.mainWindow(),
         )
 
+
+    def _remove_toolbar(self, toolbar):
+        """Detach and schedule deletion of a plugin toolbar widget."""
+        if toolbar is None:
+            return
+
+        main_window = self.iface.mainWindow()
+        actions = []
+        try:
+            actions = list(toolbar.actions())
+        except Exception:
+            pass  # nosec B110
+        try:
+            toolbar.clear()
+        except Exception:
+            pass  # nosec B110
+        for action in actions:
+            try:
+                action.deleteLater()
+            except Exception:
+                pass  # nosec B110
+        try:
+            main_window.removeToolBar(toolbar)
+        except Exception:
+            pass  # nosec B110
+        try:
+            toolbar.hide()
+        except Exception:
+            pass  # nosec B110
+        try:
+            toolbar.setParent(None)
+        except Exception:
+            pass  # nosec B110
+        try:
+            toolbar.deleteLater()
+        except Exception:
+            pass  # nosec B110
+
+    def _remove_toolbars_by_object_name(self):
+        """Remove current or stale plugin toolbars from QGIS."""
+        main_window = self.iface.mainWindow()
+        for toolbar in main_window.findChildren(QToolBar, TOOLBAR_OBJECT_NAME):
+            self._remove_toolbar(toolbar)
+
+    def _plugin_menu_titles(self):
+        """Return possible translated and untranslated plugin menu titles."""
+        titles = {MENU_TITLE}
+        translator = getattr(self, "tr", None)
+        if callable(translator):
+            try:
+                titles.add(translator(MENU_TITLE))
+            except Exception:
+                pass  # nosec B110
+        return titles
+
+    def _remove_menu(self, menu):
+        """Detach and schedule deletion of a plugin menu."""
+        if menu is None:
+            return
+
+        main_window = self.iface.mainWindow()
+        try:
+            menu.clear()
+        except Exception:
+            pass  # nosec B110
+        try:
+            main_window.menuBar().removeAction(menu.menuAction())
+        except Exception:
+            pass  # nosec B110
+        try:
+            menu.setParent(None)
+        except Exception:
+            pass  # nosec B110
+        try:
+            menu.deleteLater()
+        except Exception:
+            pass  # nosec B110
+
+    def _remove_menus_by_title(self):
+        """Remove current or stale plugin menus from QGIS."""
+        menu_bar = self.iface.mainWindow().menuBar()
+        titles = self._plugin_menu_titles()
+        for action in menu_bar.actions():
+            menu = action.menu()
+            if menu is not None and menu.title() in titles:
+                self._remove_menu(menu)
+
     def unload(self):
         """Remove plugin UI from QGIS."""
         if self._wetland_dock:
@@ -154,6 +246,9 @@ class QgisWetlandPlugin:
             self.toolbar = None
 
         self.actions = []
+
+        self._remove_toolbars_by_object_name()
+        self._remove_menus_by_title()
 
     def toggle_wetland_dock(self):
         """Toggle the Wetland Mapper dock widget."""
