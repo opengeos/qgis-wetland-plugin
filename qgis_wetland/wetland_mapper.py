@@ -22,6 +22,7 @@ def _enum_value(cls, enum_name, member_name):
 TOOLBAR_OBJECT_NAME = "WetlandMapperToolbar"
 MENU_TITLE = "Wetland Mapper"
 
+
 class QgisWetlandPlugin:
     """Wetland Mapper implementation class for QGIS."""
 
@@ -133,7 +134,6 @@ class QgisWetlandPlugin:
             status_tip="About Wetland Mapper",
             parent=self.iface.mainWindow(),
         )
-
 
     def _remove_toolbar(self, toolbar):
         """Detach and schedule deletion of a plugin toolbar widget."""
